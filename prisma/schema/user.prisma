@@ -1,0 +1,68 @@
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  email    String @unique
+  password String?
+  role     Role   @default(USER)
+
+  googleId String? @unique
+  githubId String? @unique
+
+  submissions           Submission[]
+
+  rankPoints           Int                  @default(1000)
+  wins                 Int                  @default(0)
+  losses               Int                  @default(0)
+
+  refreshTokenHash String?
+  tokenVersion     Int       @default(0)
+  failedLoginCount Int       @default(0)
+  lockUntil        DateTime?
+
+  // Social Relations
+  followers        Follow[]        @relation("followers")
+  following        Follow[]        @relation("following")
+  sentRequests     FriendRequest[] @relation("sentRequests")
+  receivedRequests FriendRequest[] @relation("receivedRequests")
+  sentMessages     PrivateMessage[] @relation("sentMessages")
+  receivedMessages PrivateMessage[] @relation("receivedMessages")
+
+  // Profile Fields
+  profilePic String?
+
+  // Password Reset Fields
+  resetPasswordToken String?
+  resetPasswordExpires DateTime?
+  linkedin   String?
+  github     String?
+  leetcode   String?
+  gfg        String?
+  hackerrank String?
+  codeforces String?
+  instagram  String?
+  twitter    String?
+
+  country    String?
+  region     String?
+
+  notifications Notification[]
+
+  // Phase 4: Rewards & Achievements
+  cyberCores       Int      @default(0)
+  dailyLoginStreak Int      @default(0)
+  lastLogin        DateTime @default(now())
+  
+  achievements     UserAchievement[]
+  badges           UserBadge[]
+  userHints        UserHint[]
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([refreshTokenHash]) // needed
+}
