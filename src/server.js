@@ -6,7 +6,6 @@ import SocketServer from "./integrations/socket/socket.server.js";
 import SocketEmitter from "./core/config/socket.js";
 import Redis from "ioredis";
 import UserCache from "./core/cache/userCache.js";
-import ProblemCache from "./core/cache/problemCache.js";
 
 
 class ServerApp {
@@ -100,9 +99,6 @@ class ServerApp {
     });
   }
 
-  /**
-   * Warm up all caches on server startup
-   */
   static async warmUpCaches() {
     try {
       logger.info("🔥 Warming up Redis caches...");
@@ -110,13 +106,6 @@ class ServerApp {
 
       // 1. Users — paginated, non-blocking errors
       await UserCache.warmUp();
-
-      // 2. Problems — all problems + difficulty sets
-      await ProblemCache.warmUp();
-
-      // 3. Leaderboard ZSET — warm global ranking ZSET
-      const { default: LeaderboardService } = await import("./modules/leaderboard/leaderboard.service.js");
-      await LeaderboardService.warmUpZSet();
 
       logger.info(`✅ All caches warmed up in ${Date.now() - t0}ms`);
     } catch (error) {

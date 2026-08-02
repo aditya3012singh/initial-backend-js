@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import structuredLogger from '../../core/logger/structuredLogger.js';
 import { contextStorage } from '../../core/logger/context.js';
 
@@ -18,8 +18,8 @@ export function traceIdMiddleware(req, res, next) {
     const parts = traceparent?.split('-');
     const incomingTraceId = req.headers['x-trace-id'] || (parts?.length === 4 ? parts[1] : undefined);
     
-    const traceId = incomingTraceId || uuidv4().replace(/-/g, '');
-    const requestId = `req_${uuidv4().replace(/-/g, '')}`;
+    const traceId = incomingTraceId || crypto.randomUUID().replace(/-/g, '');
+    const requestId = `req_${crypto.randomUUID().replace(/-/g, '')}`;
     
     // Attach to request
     req.traceId = traceId;
@@ -82,7 +82,7 @@ export function createEventTraceContext(traceId, eventName) {
     return {
         traceId,
         eventName,
-        eventId: `evt_${uuidv4()}`,
+        eventId: `evt_${crypto.randomUUID()}`,
         timestamp: new Date().toISOString()
     };
 }
@@ -97,7 +97,7 @@ export function createJobTraceContext(traceId, jobName) {
     return {
         traceId,
         jobName,
-        jobId: `job_${uuidv4()}`,
+        jobId: `job_${crypto.randomUUID()}`,
         timestamp: new Date().toISOString()
     };
 }

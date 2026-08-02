@@ -6,8 +6,7 @@ import jwt from "jsonwebtoken";
 import env from "../../core/config/env.js";
 import logger from "../../core/logger/logger.js";
 import UserCache from "../../core/cache/userCache.js";
-import { handleGlobalMessage, syncGlobalHistory } from "./globalChat.handlers.js";
-import { handlePrivateMessages } from "./message.handlers.js";
+
 
 class SocketServer {
     static io = null;
@@ -78,25 +77,11 @@ class SocketServer {
 
         this.setupMiddleware();
         this.setupEventHandlers();
-        this.startGlobalStatsBroadcast();
 
         return this.io;
     }
 
-    static startGlobalStatsBroadcast() {
-        const BROADCAST_INTERVAL = 30000; // 30 seconds
-        
-        setInterval(async () => {
-            try {
-                const { default: AnalyticsService } = await import("../../modules/analytics/analytics.service.js");
-                const stats = await AnalyticsService.getGlobalStats();
-                this.io.emit("global_stats_update", stats);
-                // logger.debug("📡 [Socket] Global stats broadcasted");
-            } catch (err) {
-                logger.error(`❌ [Socket] Global stats broadcast failed: ${err.message}`);
-            }
-        }, BROADCAST_INTERVAL);
-    }
+
 
     static setupMiddleware() {
         this.io.use((socket, next) => {
@@ -136,12 +121,7 @@ class SocketServer {
             const count = sockets ? (sockets.size || sockets.length) : 0;
             logger.info(`🏠 User ${socket.userId} joined private room: ${userRoom} (Total in room: ${count})`);
 
-            // 1. Global Chat Handlers
-            socket.on("send_global_message", (payload) => handleGlobalMessage(this.io, socket, payload));
-            syncGlobalHistory(socket);
 
-            // 2. Private Message Handlers
-            handlePrivateMessages(this.io, socket);
 
             // 3. Presence Tracking (Online Status)
             this.updatePresence(socket.userId, true);

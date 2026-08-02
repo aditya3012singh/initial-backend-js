@@ -1,6 +1,5 @@
 import logger from './logger.js';
 import { contextStorage } from './context.js';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Structured Logger with Trace ID Propagation

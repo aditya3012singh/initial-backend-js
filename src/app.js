@@ -16,13 +16,6 @@ import timeoutMiddleware from "./api/middleware/timeout.middleware.js";
 
 // Routes
 import AuthRoutes from "./modules/auth/auth.routes.js";
-import ProblemRoutes from "./modules/problem/problem.routes.js";
-import SubmissionRoutes from "./modules/submission/submission.routes.js";
-import LeaderboardRoutes from "./modules/leaderboard/leaderboard.routes.js";
-import SocialRoutes from "./modules/social/social.routes.js";
-import NotificationRoutes from "./modules/notification/notification.routes.js";
-import AnalyticsRoutes from "./modules/analytics/analytics.routes.js";
-import AIRoutes from "./modules/ai/ai.routes.js";
 import HealthRoutes from "./core/health/health.routes.js";
 
 class App {
@@ -68,15 +61,7 @@ class App {
 
     // 📂 Routes
     app.use("/api/auth", AuthRoutes.createRouter());
-    app.use("/api/problem", ProblemRoutes.createRouter());
-    app.use("/api/submissions", SubmissionRoutes.createRouter());
-    app.use("/api/leaderboard", LeaderboardRoutes.createRouter());
-
-    // Social & Notifications use refactored standard router exports
-    app.use("/api/social", SocialRoutes);
-    app.use("/api/notifications", NotificationRoutes);
-    app.use("/api/analytics", AnalyticsRoutes);
-    app.use("/api/ai", AIRoutes.createRouter());
+  
     app.use("/api/health", HealthRoutes);
 
     app.get("/", (req, res) => {

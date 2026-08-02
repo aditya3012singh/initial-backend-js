@@ -42,14 +42,15 @@ const envSchema = z.object({
   S3_ENDPOINT: z.string().url().optional(),
   S3_PUBLIC_URL: z.string().url().optional(),
 
-  // App Configs
-  CHALLENGX_RUNNERS_PATH: z.string().optional(),
-  CODEARENA_RUNNERS_PATH: z.string().optional(),
-  JUDGE_POOL_SIZE: z.string().transform(Number).default("10"),
-  MATCHMAKING_RANK_THRESHOLD: z.string().transform(Number).default("2000"),
-  WORKER_CONCURRENCY: z.string().transform(Number).default("10"),
-  JUDGE_GRPC_HOST: z.string().default("localhost"),
-  JUDGE_GRPC_PORT: z.string().transform(Number).default("50051"),
+  // Email Configs (SMTP)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().transform(Number).optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  EMAIL_FROM: z.string().email().default("noreply@basebackend.com"),
+
+  // Queue Configs
+  QUEUE_NAME: z.string().default("default_queue"),
 
   // OAuth
   GOOGLE_CLIENT_ID: z.string().optional(),
@@ -58,10 +59,6 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
   GITHUB_CALLBACK_URL: z.string().optional(),
-
-  // AI
-  GEMINI_API_KEY: z.string().optional(),
-  DISABLE_GEMINI: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);
@@ -72,5 +69,4 @@ if (!_env.success) {
 }
 
 export const env = _env.data;
-console.log(`[ENV] GEMINI_API_KEY Loaded: ${env.GEMINI_API_KEY ? env.GEMINI_API_KEY.substring(0, 8) + '...' : 'MISSING'}`);
 export default env;

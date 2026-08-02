@@ -1,5 +1,4 @@
 import UserCache from "./userCache.js";
-import ProblemCache from "./problemCache.js";
 import logger from "../logger/logger.js";
 
 /**
@@ -34,49 +33,6 @@ class CacheManager {
     }
 
     /**
-     * Invalidate problem cache
-     * @param {string} problemId 
-     */
-    static async invalidateProblem(problemId) {
-        try {
-            await ProblemCache.invalidateProblem(problemId);
-            logger.info(`[CacheManager] Invalidated problem ${problemId} cache`);
-        } catch (error) {
-            logger.error(`[CacheManager] Error invalidating problem ${problemId}:`, error);
-        }
-    }
-
-    /**
-     * Update problem in cache
-     * @param {object} problem 
-     */
-    static async updateProblem(problem) {
-        try {
-            await ProblemCache.updateProblem(problem);
-            logger.info(`[CacheManager] Updated problem ${problem.id}`);
-        } catch (error) {
-            logger.error(`[CacheManager] Error updating problem ${problem.id}:`, error);
-        }
-    }
-
-    /**
-     * Invalidate testcases cache
-     * @param {string} problemId 
-     */
-    static async invalidateTestcases(problemId) {
-        // No-op (Testcases are handled directly in database / S3)
-    }
-
-    /**
-     * Update testcases in cache
-     * @param {string} problemId 
-     * @param {Array} testcases 
-     */
-    static async updateTestcases(problemId, testcases) {
-        // No-op (Testcases are handled directly in database / S3)
-    }
-
-    /**
      * Invalidate all caches for a user
      * @param {string} userId 
      */
@@ -86,19 +42,6 @@ class CacheManager {
             logger.info(`[CacheManager] Invalidated all caches for user ${userId}`);
         } catch (error) {
             logger.error(`[CacheManager] Error invalidating all for user ${userId}:`, error);
-        }
-    }
-
-    /**
-     * Invalidate all caches for a problem
-     * @param {string} problemId 
-     */
-    static async invalidateAllForProblem(problemId) {
-        try {
-            await ProblemCache.invalidateProblem(problemId);
-            logger.info(`[CacheManager] Invalidated all caches for problem ${problemId}`);
-        } catch (error) {
-            logger.error(`[CacheManager] Error invalidating all for problem ${problemId}:`, error);
         }
     }
 }

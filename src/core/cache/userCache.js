@@ -38,21 +38,10 @@ class UserCache {
                         id: true,
                         username: true,
                         email: true,
-                        rankPoints: true,
                         profilePic: true,
-                        wins: true,
-                        losses: true,
-                        cyberCores: true,
-                        country: true,
-                        region: true,
+                        role: true,
                         linkedin: true,
-                        github: true,
-                        leetcode: true,
-                        codeforces: true,
-                        hackerrank: true,
-                        gfg: true,
-                        twitter: true,
-                        instagram: true
+                        github: true
                     }
                 })
             );
@@ -80,22 +69,11 @@ class UserCache {
                 id: user.id,
                 username: user.username,
                 email: user.email,
-                rankPoints: user.rankPoints,
                 profilePic: user.profilePic,
-                wins: user.wins,
-                losses: user.losses,
-                cyberCores: user.cyberCores,
-                country: user.country,
-                region: user.region,
+                role: user.role,
                 socialLinks: {
                     linkedin: user.linkedin,
-                    github: user.github,
-                    leetcode: user.leetcode,
-                    codeforces: user.codeforces,
-                    hackerrank: user.hackerrank,
-                    gfg: user.gfg,
-                    twitter: user.twitter,
-                    instagram: user.instagram
+                    github: user.github
                 }
             };
 
@@ -246,47 +224,7 @@ class UserCache {
         }
     }
 
-    /**
-     * Get user rank position
-     * @param {string} userId 
-     * @returns {Promise<number|null>}
-     */
-    static async getRankPosition(userId) {
-        try {
-            const user = await this.getUser(userId);
-            if (!user) return null;
 
-            // Get count of users with higher rank
-            const rank = await RedisClient.client.zcount("rank:global", user.rankPoints + 1, "+inf");
-            return rank + 1;
-        } catch (error) {
-            logger.error(`[UserCache] Error getting rank for user ${userId}:`, error);
-            return null;
-        }
-    }
-
-    /**
-     * Update user rank points in cache
-     * @param {string} userId 
-     * @param {number} newRankPoints 
-     * @returns {Promise<void>}
-     */
-    static async updateRankPoints(userId, newRankPoints) {
-        try {
-            const cached = await RedisClient.client.get(`${USER_PREFIX}${userId}`);
-            if (cached) {
-                const userData = JSON.parse(cached);
-                userData.rankPoints = newRankPoints;
-                await RedisClient.client.set(
-                    `${USER_PREFIX}${userId}`,
-                    JSON.stringify(userData),
-                    'EX', USER_TTL
-                );
-            }
-        } catch (error) {
-            logger.error(`[UserCache] Error updating rank for user ${userId}:`, error);
-        }
-    }
 
     /**
      * Warm up cache with all users
@@ -310,21 +248,10 @@ class UserCache {
                             id: true,
                             username: true,
                             email: true,
-                            rankPoints: true,
                             profilePic: true,
-                            wins: true,
-                            losses: true,
-                            cyberCores: true,
-                            country: true,
-                            region: true,
+                            role: true,
                             linkedin: true,
-                            github: true,
-                            leetcode: true,
-                            codeforces: true,
-                            hackerrank: true,
-                            gfg: true,
-                            twitter: true,
-                            instagram: true
+                            github: true
                         }
                     })
                 );

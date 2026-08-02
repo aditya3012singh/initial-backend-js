@@ -103,48 +103,10 @@ class AuthController {
                     email: true,
                     password: true,
                     role: true,
-                    rankPoints: true,
-                    losses: true,
-                    wins: true,
                     createdAt: true,
                     profilePic: true,
                     linkedin: true,
-                    github: true,
-                    leetcode: true,
-                    gfg: true,
-                    hackerrank: true,
-                    codeforces: true,
-                    instagram: true,
-                    twitter: true,
-                    cyberCores: true,
-                    dailyLoginStreak: true,
-                    achievements: {
-                        select: {
-                            id: true,
-                            unlockedAt: true,
-                            achievement: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    description: true
-                                }
-                            }
-                        }
-                    },
-                    badges: {
-                        select: {
-                            id: true,
-                            unlockedAt: true,
-                            badge: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    description: true,
-                                    iconUrl: true
-                                }
-                            }
-                        }
-                    }
+                    github: true
                 }
             })
         );
@@ -192,48 +154,10 @@ class AuthController {
                     id: true,
                     username: true,
                     role: true,
-                    rankPoints: true,
-                    losses: true,
-                    wins: true,
                     createdAt: true,
                     profilePic: true,
                     linkedin: true,
-                    github: true,
-                    leetcode: true,
-                    gfg: true,
-                    hackerrank: true,
-                    codeforces: true,
-                    instagram: true,
-                    twitter: true,
-                    cyberCores: true,
-                    dailyLoginStreak: true,
-                    achievements: {
-                        select: {
-                            id: true,
-                            unlockedAt: true,
-                            achievement: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    description: true
-                                }
-                            }
-                        }
-                    },
-                    badges: {
-                        select: {
-                            id: true,
-                            unlockedAt: true,
-                            badge: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    description: true,
-                                    iconUrl: true
-                                }
-                            }
-                        }
-                    }
+                    github: true
                 }
             })
         );
@@ -244,16 +168,8 @@ class AuthController {
             throw err;
         }
 
-        // Calculate additional stats
-        const totalBattles = user.wins + user.losses;
-        const winRate = totalBattles > 0 ? ((user.wins / totalBattles) * 100).toFixed(2) : 0;
-
         res.ok({
-            user: {
-                ...user,
-                totalBattles,
-                winRate: parseFloat(winRate)
-            }
+            user
         }, "Public profile fetched successfully");
     }
     static async updateProfile(req, res) {
@@ -262,9 +178,7 @@ class AuthController {
 
         // Fields allowed to be updated
         const allowedFields = [
-            'profilePic', 'linkedin', 'github', 
-            'leetcode', 'gfg', 'hackerrank', 
-            'codeforces', 'instagram', 'twitter'
+            'profilePic', 'linkedin', 'github'
         ];
 
         const dataToUpdate = {};
@@ -284,13 +198,7 @@ class AuthController {
                     email: true,
                     profilePic: true,
                     linkedin: true,
-                    github: true,
-                    leetcode: true,
-                    gfg: true,
-                    hackerrank: true,
-                    codeforces: true,
-                    instagram: true,
-                    twitter: true
+                    github: true
                 }
             })
         );

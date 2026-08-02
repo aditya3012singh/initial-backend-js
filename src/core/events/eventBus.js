@@ -33,10 +33,7 @@ class DomainEventBus extends EventEmitter {
         
         // ✅ PHASE 4: Critical events that should retry
         this.criticalEvents = new Set([
-            'BattleFinished',
-            'SubmissionCompleted',
-            'RewardGranted',
-            'AchievementUnlocked'
+            // Critical event types can be added here in project implementations
         ]);
         
         // ✅ PHASE 4: Retry configuration

@@ -5,11 +5,11 @@ class SocketEmitter {
     static setIo(io) {
         this.io = io;
     }
-    static emitToBattle(battleId, event, data) {
+    static emitToRoom(room, event, data) {
         if (!this.io) {
             return;
         }
-        this.io.to(battleId).emit(event, data);
+        this.io.to(room).emit(event, data);
     }
 }
 

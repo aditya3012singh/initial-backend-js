@@ -27,8 +27,8 @@ FROM node:20-bookworm-slim
 
 WORKDIR /app
 
-# Install Docker CLI and OpenSSL for sibling container orchestration and Prisma
-RUN apt-get update -y && apt-get install -y docker.io openssl && rm -rf /var/lib/apt/lists/*
+# Install OpenSSL for Prisma
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Copy only production dependencies
 COPY package*.json ./

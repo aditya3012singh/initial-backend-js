@@ -20,10 +20,7 @@ import {
   dbErrorsTotal
 } from './dbMetrics.js';
 
-import {
-  submissionsTotal,
-  submissionResultsTotal
-} from './submissionMetrics.js';
+
 
 // Export the core Prometheus registry
 export { register };
@@ -52,9 +49,7 @@ export {
   dbQueryDurationMs,
   dbTransactionsTotal,
   dbTransactionDurationMs,
-  dbErrorsTotal,
-  submissionsTotal,
-  submissionResultsTotal
+  dbErrorsTotal
 };
 
 // ============================================================================
@@ -90,14 +85,7 @@ export function recordCacheOperation({ cacheType, hit, ratio = null }) {
   }
 }
 
-/**
- * Record submission
- * @param {object} options
- */
-export function recordSubmission({ type, language, resultStatus }) {
-  submissionsTotal.labels(type, language).inc();
-  submissionResultsTotal.labels(resultStatus, language).inc();
-}
+
 
 /**
  * Record database query metrics
