@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import JwtService from "../../utils/jwt.js";
 import crypto from "crypto";
 import env from "../../core/config/env.js";
+import EmailService from "../../core/email/email.service.js";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
@@ -242,20 +243,26 @@ class AuthService {
       })
     );
 
-    // Mock Email Service - Logging to Console for Development
-    console.log(`\n======================================================`);
-    console.log(`[EMAIL MOCK] Forgot Password Request for ${email}`);
-    console.log(`Click this link to reset password:`);
+    // Send reset email asynchronously using EmailService
     const baseUrl = env.FRONTEND_URL.endsWith('/') ? env.FRONTEND_URL.slice(0, -1) : env.FRONTEND_URL;
-    console.log(`${baseUrl}/reset-password/${resetToken}`);
-    console.log(`======================================================\n`);
+    const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
 
-    // In a real production app, you would integrate Nodemailer or AWS SES here
-    
-    return {
-       message: "If an account with that email exists, a reset link has been sent.",
-       devTokenHint: resetToken // Exposing solely so we can auto-fill this in local development frontend
+    await EmailService.sendEmail({
+      to: email,
+      subject: 'Reset your password',
+      text: `Click this link to reset your password: ${resetUrl}`,
+      html: `<p>You requested a password reset. Click <a href="${resetUrl}">here</a> to reset your password.</p>`
+    });
+
+    const result = {
+      message: "If an account with that email exists, a reset link has been sent."
     };
+
+    if (env.NODE_ENV !== 'production') {
+      result.devTokenHint = resetToken;
+    }
+
+    return result;
   }
 
   static async resetPasswordService(token, newPassword) {
@@ -272,7 +279,7 @@ class AuthService {
     );
 
     if (!user) {
-      const err = new Error("Token is invalid or has expired");
+      const err = new Error("Token is invalid or has expired.");
       err.statusCode = 400;
       throw err;
     }
@@ -292,7 +299,7 @@ class AuthService {
       })
     );
 
-    return { message: "Password has been successfully reset" };
+    return { message: "Password has been successfully reset." };
   }
 }
 

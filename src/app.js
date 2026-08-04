@@ -17,6 +17,8 @@ import timeoutMiddleware from "./api/middleware/timeout.middleware.js";
 // Routes
 import AuthRoutes from "./modules/auth/auth.routes.js";
 import HealthRoutes from "./core/health/health.routes.js";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./core/config/swagger.js";
 
 class App {
   static createApp() {
@@ -60,6 +62,7 @@ class App {
     app.use("/api/", limiter);
 
     // 📂 Routes
+    app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     app.use("/api/auth", AuthRoutes.createRouter());
   
     app.use("/api/health", HealthRoutes);
