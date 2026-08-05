@@ -1,5 +1,5 @@
 import RedisClient from '../cache/redis.client.js';
-import Database from '../config/db.js';
+import DBWrapper from '../config/db.wrapper.js';
 import structuredLogger from '../logger/structuredLogger.js';
 
 /**
@@ -84,7 +84,7 @@ class HealthCheckService {
             );
 
             await Promise.race([
-                Database.client.$queryRaw`SELECT 1`,
+                DBWrapper.execute('healthCheckPing', (db) => db.$queryRaw`SELECT 1`),
                 timeoutPromise
             ]);
 
