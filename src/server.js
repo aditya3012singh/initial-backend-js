@@ -2,6 +2,7 @@ import env from "./core/config/env.js";
 import App from "./app.js";
 import http from "http";
 import logger from "./core/logger/logger.js";
+import Database from "./core/config/db.js";
 import SocketServer from "./integrations/socket/socket.server.js";
 import SocketEmitter from "./core/config/socket.js";
 import Redis from "ioredis";
@@ -76,6 +77,31 @@ class ServerApp {
     const app = App.createApp();
     const server = this.createServer(app);
 
+    // 1. Verify Database Connection (non-blocking, with 3 retries)
+    logger.info('[Database] Checking connection to postgres database...');
+    const maxRetries = 3;
+    const retryDelay = 2000;
+    let connected = false;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        await Database.client.$connect();
+        logger.info('✅ [Database] Connection verified.');
+        connected = true;
+        break;
+      } catch (dbError) {
+        logger.warn(`⚠️ [Database] Connection attempt ${attempt}/${maxRetries} failed: ${dbError.message}`);
+        if (attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+      }
+    }
+
+    if (!connected) {
+      logger.error('❌ [Database] All connection attempts failed.');
+      logger.warn('⚠️ [Database] Continuing boot without active database connection.');
+    }
+
     // Initialize Socket Server
     this.io = SocketServer.initialize(server);
     SocketEmitter.setIo(this.io);
@@ -95,7 +121,7 @@ class ServerApp {
     });
 
     server.listen(PORT, () => {
-      logger.info(`🚀 CodeArena Production Server running on port ${PORT}`);
+      logger.info(`🚀 API Server successfully started on port ${PORT}`);
     });
   }
 
