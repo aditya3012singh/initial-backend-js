@@ -1,4 +1,4 @@
-import DBWrapper from '../../../../core/config/db.wrapper.js';
+﻿import DBWrapper from '../../../../core/config/db.wrapper.js';
 import { IUserRepository } from '../user.repository.interface.js';
 
 export class PrismaUserRepository extends IUserRepository {
@@ -11,6 +11,20 @@ export class PrismaUserRepository extends IUserRepository {
     async findByEmail(email) {
         return DBWrapper.execute('userRepoFindByEmail', (db) =>
             db.user.findUnique({ where: { email } })
+        );
+    }
+
+    async findByUsername(username) {
+        return DBWrapper.execute('userRepoFindByUsername', (db) =>
+            db.user.findUnique({ where: { username } })
+        );
+    }
+
+    async findByEmailOrUsername(email, username) {
+        return DBWrapper.execute('userRepoFindByEmailOrUsername', (db) =>
+            db.user.findFirst({
+                where: { OR: [{ email }, { username }] }
+            })
         );
     }
 
@@ -45,6 +59,21 @@ export class PrismaUserRepository extends IUserRepository {
             db.user.update({
                 where: { email },
                 data
+            })
+        );
+    }
+
+    async findOrCreateOAuthUser(data) {
+        return DBWrapper.execute('userRepoFindOrCreateOAuth', (db) =>
+            db.user.upsert({
+                where: { email: data.email },
+                update: { profilePic: data.profilePic },
+                create: {
+                    username: data.username,
+                    email: data.email,
+                    password: '',
+                    profilePic: data.profilePic
+                }
             })
         );
     }

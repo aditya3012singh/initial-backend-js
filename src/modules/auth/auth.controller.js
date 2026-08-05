@@ -1,20 +1,19 @@
-// • Register user
+﻿// • Register user
 // • Login user
 // • Issue JWT
 
 import AuthService from "./auth.service.js";
+import userRepository from "./repositories/user.repository.js";
 import CookieOptions from "../../utils/cookies.js";
 import AuthSchema from "./auth.schema.js";
-import Database from "../../core/config/db.js";
-import DBWrapper from "../../core/config/db.wrapper.js";
 import S3Service from "../../integrations/s3/s3.service.js";
 import JwtService from "../../utils/jwt.js";
 import env from "../../core/config/env.js";
 import passport from "passport";
-// ✅ PHASE 1: Import event bus and types
 import eventBus from "../../core/events/eventBus.js";
 import { EventTypes } from "../../core/events/eventTypes.js";
 import RedisClient from "../../core/cache/redis.client.js";
+import bcrypt from "bcrypt";
 
 class AuthController {
     static async login(req, res) {
@@ -35,7 +34,7 @@ class AuthController {
                 }
             }, "Login successful");
 
-        // ✅ Emit event
+        // Emit event
         eventBus.emitEvent(EventTypes.USER_AUTHENTICATED, {
             userId: user.id,
             timestamp: new Date(),
@@ -66,12 +65,7 @@ class AuthController {
         const userId = req.user?.id;
 
         if (userId) {
-            await DBWrapper.execute("authLogoutClearToken", (db) =>
-                db.user.update({
-                    where: { id: userId },
-                    data: { refreshTokenHash: null }
-                })
-            );
+            await userRepository.update(userId, { refreshTokenHash: null });
         }
 
         // Clear cookies
@@ -94,22 +88,7 @@ class AuthController {
             // Cache hit failure is handled silently
         }
 
-        const user = await DBWrapper.execute("authGetProfileSelect", (db) =>
-            db.user.findUnique({
-                where: { id: userId },
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    password: true,
-                    role: true,
-                    createdAt: true,
-                    profilePic: true,
-                    linkedin: true,
-                    github: true
-                }
-            })
-        );
+        const user = await userRepository.findById(userId);
 
         if (!user) {
             const err = new Error("User not found");
@@ -117,12 +96,12 @@ class AuthController {
             throw err;
         }
 
-        const { password, ...userWithoutPassword } = user;
-        const responseData = { 
-            user: { 
-                ...userWithoutPassword, 
+        const { password, ...userWithoutPassword } = user.toObject ? user.toObject() : user;
+        const responseData = {
+            user: {
+                ...userWithoutPassword,
                 hasPassword: !!password
-            } 
+            }
         };
 
         const resultBody = {
@@ -147,20 +126,7 @@ class AuthController {
     static async getPublicProfile(req, res) {
         const { username } = req.params;
 
-        const user = await DBWrapper.execute("authGetPublicProfileSelect", (db) =>
-            db.user.findUnique({
-                where: { username },
-                select: {
-                    id: true,
-                    username: true,
-                    role: true,
-                    createdAt: true,
-                    profilePic: true,
-                    linkedin: true,
-                    github: true
-                }
-            })
-        );
+        const user = await userRepository.findByUsername(username);
 
         if (!user) {
             const err = new Error("User not found");
@@ -169,18 +135,24 @@ class AuthController {
         }
 
         res.ok({
-            user
+            user: {
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                createdAt: user.createdAt,
+                profilePic: user.profilePic,
+                linkedin: user.linkedin,
+                github: user.github
+            }
         }, "Public profile fetched successfully");
     }
+
     static async updateProfile(req, res) {
         const userId = req.user.id;
-        const updateData = req.body; // Expecting profile fields in body
+        const updateData = req.body;
 
         // Fields allowed to be updated
-        const allowedFields = [
-            'profilePic', 'linkedin', 'github'
-        ];
-
+        const allowedFields = ['profilePic', 'linkedin', 'github'];
         const dataToUpdate = {};
         for (const field of allowedFields) {
             if (updateData[field] !== undefined) {
@@ -188,24 +160,20 @@ class AuthController {
             }
         }
 
-        const updatedUser = await DBWrapper.execute("authUpdateProfileFields", (db) =>
-            db.user.update({
-                where: { id: userId },
-                data: dataToUpdate,
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    profilePic: true,
-                    linkedin: true,
-                    github: true
-                }
-            })
-        );
+        const updatedUser = await userRepository.update(userId, dataToUpdate);
 
         await RedisClient.client.del(`user:full_profile:${userId}`).catch(() => {});
 
-        res.ok({ user: updatedUser }, "Profile updated successfully");
+        res.ok({
+            user: {
+                id: updatedUser.id,
+                username: updatedUser.username,
+                email: updatedUser.email,
+                profilePic: updatedUser.profilePic,
+                linkedin: updatedUser.linkedin,
+                github: updatedUser.github
+            }
+        }, "Profile updated successfully");
     }
 
     static async getProfileUploadUrl(req, res) {
@@ -225,6 +193,7 @@ class AuthController {
 
         res.ok({ uploadUrl, fileUrl }, "Upload URL generated successfully");
     }
+
     static async forgotPassword(req, res) {
         const { email } = req.validated.body;
         const result = await AuthService.forgotPasswordService(email);
@@ -232,7 +201,6 @@ class AuthController {
     }
 
     static async resetPassword(req, res) {
-        // Support token either deeply nested in body or passed via path params
         const token = req.params.token || req.body.token;
         const newPassword = req.body.newPassword;
 
@@ -258,15 +226,9 @@ class AuthController {
             });
 
             const refreshToken = JwtService.generateRefreshToken({ id: user.id });
-            const bcrypt = await import("bcrypt").then(b => b.default);
             const hashedToken = await bcrypt.hash(refreshToken, 10);
 
-            await DBWrapper.execute("authSocialSetRefreshToken", (db) =>
-                db.user.update({
-                    where: { id: user.id },
-                    data: { refreshTokenHash: hashedToken }
-                })
-            );
+            await userRepository.update(user.id, { refreshTokenHash: hashedToken });
 
             const { state } = req.query;
             let redirectTo = "/";
@@ -288,7 +250,7 @@ class AuthController {
                 .cookie("refreshToken", refreshToken, CookieOptions.refreshCookieOptions)
                 .redirect(finalUrl);
 
-            // ✅ Emit event
+            // Emit event
             eventBus.emitEvent(EventTypes.USER_AUTHENTICATED, {
                 userId: user.id,
                 timestamp: new Date(),
@@ -304,23 +266,19 @@ class AuthController {
         const { oldPassword, newPassword } = req.validated.body;
         const userId = req.user.id;
 
-        const user = await DBWrapper.execute("authChangePasswordGetUser", (db) =>
-            db.user.findUnique({ where: { id: userId } })
-        );
+        const user = await userRepository.findById(userId);
         if (!user) {
             const err = new Error("User not found");
             err.statusCode = 404;
             throw err;
         }
 
-        // If user has no password (OAuth only), they can't "change" it normally
         if (!user.password) {
             const err = new Error("OAuth accounts must use their provider to log in or reset password via email to set one.");
             err.statusCode = 400;
             throw err;
         }
 
-        const bcrypt = await import("bcrypt").then(b => b.default);
         const isMatch = await bcrypt.compare(oldPassword, user.password);
         if (!isMatch) {
             const err = new Error("Invalid old password");
@@ -329,12 +287,7 @@ class AuthController {
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await DBWrapper.execute("authChangePasswordUpdate", (db) =>
-            db.user.update({
-                where: { id: userId },
-                data: { password: hashedPassword }
-            })
-        );
+        await userRepository.update(userId, { password: hashedPassword });
 
         res.ok({}, "Password updated successfully");
     }
