@@ -107,9 +107,6 @@ class ServerApp {
     SocketEmitter.setIo(this.io);
     this.setupRedisSubscriber(this.io);
 
-    // Warm up caches on startup
-    await this.warmUpCaches();
-
     const PORT = env.PORT || 4000;
     server.on('error', (err) => {
       if (err.code === 'EADDRINUSE') {
@@ -123,21 +120,6 @@ class ServerApp {
     server.listen(PORT, () => {
       logger.info(`🚀 API Server successfully started on port ${PORT}`);
     });
-  }
-
-  static async warmUpCaches() {
-    try {
-      logger.info("🔥 Warming up Redis caches...");
-      const t0 = Date.now();
-
-      // 1. Users — paginated, non-blocking errors
-      await UserCache.warmUp();
-
-      logger.info(`✅ All caches warmed up in ${Date.now() - t0}ms`);
-    } catch (error) {
-      logger.error("❌ Cache warm-up failed:", error);
-      logger.warn("⚠️  Continuing without cache warm-up");
-    }
   }
 }
 

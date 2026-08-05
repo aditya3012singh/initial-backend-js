@@ -1,6 +1,5 @@
 import RedisClient from "./redis.client.js";
-import Database from "../../core/config/db.js";
-import DBWrapper from "../../core/config/db.wrapper.js";
+import userRepository from "../../modules/auth/repositories/user.repository.js";
 import logger from "../../core/logger/logger.js";
 import { recordCacheOperation } from "../../core/metrics/index.js";
 
@@ -31,20 +30,7 @@ class UserCache {
 
             // Cache miss - fetch from DB
             recordCacheOperation({ cacheType: 'user', hit: false });
-            const user = await DBWrapper.execute("userCacheGetUser", (db) =>
-                db.user.findUnique({
-                    where: { id: userId },
-                    select: {
-                        id: true,
-                        username: true,
-                        email: true,
-                        profilePic: true,
-                        role: true,
-                        linkedin: true,
-                        github: true
-                    }
-                })
-            );
+            const user = await userRepository.findById(userId);
 
             if (user) {
                 await this.cacheUser(user);
@@ -226,57 +212,7 @@ class UserCache {
 
 
 
-    /**
-     * Warm up cache with all users
-     * @returns {Promise<void>}
-     */
-    static async warmUp() {
-        try {
-            logger.info("[UserCache] Warming up user cache...");
 
-            const PAGE_SIZE = 500;
-            let skip = 0;
-            let successCount = 0;
-            let errorCount = 0;
-
-            while (true) {
-                const users = await DBWrapper.execute("userCacheWarmUp", (db) =>
-                    db.user.findMany({
-                        skip,
-                        take: PAGE_SIZE,
-                        select: {
-                            id: true,
-                            username: true,
-                            email: true,
-                            profilePic: true,
-                            role: true,
-                            linkedin: true,
-                            github: true
-                        }
-                    })
-                );
-
-                if (users.length === 0) break;
-
-                for (const user of users) {
-                    try {
-                        await this.cacheUser(user);
-                        successCount++;
-                    } catch (err) {
-                        errorCount++;
-                        logger.debug(`[UserCache] Skipping user ${user.id} due to cache error`);
-                    }
-                }
-
-                skip += PAGE_SIZE;
-                if (users.length < PAGE_SIZE) break; // last page
-            }
-
-            logger.info(`[UserCache] Warm up complete: ${successCount} users cached${errorCount > 0 ? `, ${errorCount} skipped` : ''}`);
-        } catch (error) {
-            logger.error("[UserCache] Error warming up cache:", error);
-        }
-    }
 
     /**
      * Invalidate user profile cache
