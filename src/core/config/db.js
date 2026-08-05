@@ -64,6 +64,14 @@ basePrisma.$connect()
 
 class Database {
     static client = prismaExtended;
+
+    static async connect() {
+        await basePrisma.$connect();
+    }
+
+    static async disconnect() {
+        await basePrisma.$disconnect();
+    }
 }
 
 export default Database;

@@ -78,14 +78,14 @@ class ServerApp {
     const server = this.createServer(app);
 
     // 1. Verify Database Connection (non-blocking, with 3 retries)
-    logger.info('[Database] Checking connection to postgres database...');
+    logger.info('[Database] Checking database connection...');
     const maxRetries = 3;
     const retryDelay = 2000;
     let connected = false;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        await Database.client.$connect();
+        await Database.connect();
         logger.info('✅ [Database] Connection verified.');
         connected = true;
         break;
