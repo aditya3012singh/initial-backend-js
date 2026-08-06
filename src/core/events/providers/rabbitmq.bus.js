@@ -48,7 +48,10 @@ export class RabbitMQEventBus {
             throw new Error('[RabbitMQ] Event bus channel is not initialized.');
         }
 
-        const queueName = `q_${eventName}`;
+        const appName = process.env.APP_NAME || 'base-backend';
+        const handlerIdentifier = handler.name || 'default';
+        const queueName = `q_${eventName}_${appName}_${handlerIdentifier}`;
+
         await this.channel.assertQueue(queueName, { durable: true });
         await this.channel.bindQueue(queueName, this.exchangeName, eventName);
 
