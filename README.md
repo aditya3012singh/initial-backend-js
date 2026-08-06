@@ -51,8 +51,6 @@ npx @aditya3012singh/create-base-backend
 │   └── seed.js              # Standard database seeding routine
 ├── src/                     # Core Application Source Code
 │   ├── __tests__/           # Test Suite Utilities
-│   │   └── helpers/
-│   │       └── prisma.mock.js # Database mocking layer
 │   ├── api/                 # Express Layer
 │   │   ├── middleware/      # Auth validation, Rate limits, Timeout guards, Trace ID tracking
 │   │   └── routes/          # Health check, Metrics, and OAuth routers
