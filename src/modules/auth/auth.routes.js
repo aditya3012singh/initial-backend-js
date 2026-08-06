@@ -5,14 +5,15 @@ import passport from "passport";
 import asyncWrapper from "../../api/middleware/asyncWrapper.middleware.js";
 import validateRequest from "../../api/middleware/validateRequest.middleware.js";
 import AuthSchema from "./auth.schema.js";
+import { authRateLimiter } from "../../api/middleware/rateLimiter.middleware.js";
 
 class AuthRoutes {
 	static createRouter() {
 		const router = express.Router();
 
 		// 🔐 Auth routes (Protected against brute-force credential stuffing)
-		router.post("/login", validateRequest(AuthSchema.loginSchema), asyncWrapper(AuthController.login));
-		router.post("/register", validateRequest(AuthSchema.registerSchema), asyncWrapper(AuthController.Register));
+		router.post("/login", authRateLimiter, validateRequest(AuthSchema.loginSchema), asyncWrapper(AuthController.login));
+		router.post("/register", authRateLimiter, validateRequest(AuthSchema.registerSchema), asyncWrapper(AuthController.Register));
 		router.post("/logout", AuthMiddleware.handle, asyncWrapper(AuthController.logout));
 		router.get("/profile", AuthMiddleware.handle, asyncWrapper(AuthController.getProfile));
 		router.put("/profile", AuthMiddleware.handle, asyncWrapper(AuthController.updateProfile));

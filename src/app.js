@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import passport from "passport";
 import env from "./core/config/env.js";
-import { rateLimit } from "express-rate-limit";
+import { apiRateLimiter } from "./api/middleware/rateLimiter.middleware.js";
 import logger from "./core/logger/logger.js";
 import { traceIdMiddleware } from "./api/middleware/traceId.middleware.js";
 import { metricsMiddleware } from "./api/middleware/metrics.middleware.js";
@@ -53,13 +53,7 @@ class App {
     import("./core/config/passport.js");
 
     // 🚀 Rate Limiting
-    const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit: 100,
-      standardHeaders: "draft-8",
-      legacyHeaders: false,
-    });
-    app.use("/api/", limiter);
+    app.use("/api/", apiRateLimiter);
 
     // 📂 Routes
     app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
