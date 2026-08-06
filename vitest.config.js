@@ -4,7 +4,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    setupFiles: ['./src/__tests__/helpers/prisma.mock.js'],
     include: ['src/**/*.test.js', 'scripts/**/*.test.js'],
     coverage: {
       provider: 'v8',
