@@ -1,5 +1,5 @@
 import dualModeEventBus from './dualModeEventBus.js';
-import logger from '../logger/logger.js';
+import logger from '../logger/structuredLogger.js';
 
 /**
  * Event Consumer

@@ -27,8 +27,20 @@ class StructuredLogger {
      */
     log(level, message, metadata = {}) {
         const store = contextStorage.getStore();
-        const traceId = metadata.traceId || store?.traceId || 'system';
-        const requestId = metadata.requestId || store?.requestId;
+        
+        let formattedMeta = {};
+        if (metadata && typeof metadata === 'object') {
+            if (metadata instanceof Error) {
+                formattedMeta = { error: metadata.message, stack: metadata.stack };
+            } else {
+                formattedMeta = { ...metadata };
+            }
+        } else if (metadata !== undefined && metadata !== null) {
+            formattedMeta = { extra: metadata };
+        }
+
+        const traceId = formattedMeta.traceId || store?.traceId || 'system';
+        const requestId = formattedMeta.requestId || store?.requestId;
         
         logger.log({
             level,
@@ -36,14 +48,14 @@ class StructuredLogger {
             traceId,
             ...(requestId ? { requestId } : {}),
             timestamp: new Date().toISOString(),
-            ...metadata
+            ...formattedMeta
         });
     }
 
     /**
      * Log info level
      * @param {string} message
-     * @param {object} metadata
+     * @param {any} metadata
      */
     info(message, metadata = {}) {
         this.log('info', message, metadata);
@@ -52,7 +64,7 @@ class StructuredLogger {
     /**
      * Log error level
      * @param {string} message
-     * @param {object} metadata
+     * @param {any} metadata
      */
     error(message, metadata = {}) {
         this.log('error', message, metadata);
@@ -61,7 +73,7 @@ class StructuredLogger {
     /**
      * Log warn level
      * @param {string} message
-     * @param {object} metadata
+     * @param {any} metadata
      */
     warn(message, metadata = {}) {
         this.log('warn', message, metadata);
@@ -70,7 +82,7 @@ class StructuredLogger {
     /**
      * Log debug level
      * @param {string} message
-     * @param {object} metadata
+     * @param {any} metadata
      */
     debug(message, metadata = {}) {
         this.log('debug', message, metadata);

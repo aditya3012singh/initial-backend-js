@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import logger from '../logger/logger.js';
+import logger from '../logger/structuredLogger.js';
 
 /**
  * Domain Event Bus - Production Ready

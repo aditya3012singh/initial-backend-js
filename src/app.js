@@ -5,7 +5,7 @@ import helmet from "helmet";
 import passport from "passport";
 import env from "./core/config/env.js";
 import { apiRateLimiter } from "./api/middleware/rateLimiter.middleware.js";
-import logger from "./core/logger/logger.js";
+import logger from "./core/logger/structuredLogger.js";
 import { traceIdMiddleware } from "./api/middleware/traceId.middleware.js";
 import { metricsMiddleware } from "./api/middleware/metrics.middleware.js";
 import { metricsToPrometheus } from "./core/metrics/index.js";

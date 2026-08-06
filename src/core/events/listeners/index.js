@@ -1,6 +1,6 @@
 import eventBus from '../eventBus.js';
 import { EventTypes } from '../eventTypes.js';
-import logger from '../../logger/logger.js';
+import logger from '../../logger/structuredLogger.js';
 
 /**
  * Register all event listeners

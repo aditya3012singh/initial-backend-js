@@ -4,7 +4,7 @@ import Redis from "ioredis";
 import RedisClient from "../../core/cache/redis.client.js";
 import jwt from "jsonwebtoken";
 import env from "../../core/config/env.js";
-import logger from "../../core/logger/logger.js";
+import logger from "../../core/logger/structuredLogger.js";
 import UserCache from "../../core/cache/userCache.js";
 
 

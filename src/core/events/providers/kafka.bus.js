@@ -1,5 +1,5 @@
 import { Kafka } from 'kafkajs';
-import logger from '../../logger/logger.js';
+import logger from '../../logger/structuredLogger.js';
 
 export class KafkaEventBus {
     constructor() {

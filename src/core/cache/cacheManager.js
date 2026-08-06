@@ -1,5 +1,5 @@
 import UserCache from "./userCache.js";
-import logger from "../logger/logger.js";
+import logger from "../logger/structuredLogger.js";
 
 /**
  * Cache Manager

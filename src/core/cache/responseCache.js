@@ -1,5 +1,5 @@
 import RedisClient from "../cache/redis.client.js";
-import logger from "../logger/logger.js";
+import logger from "../logger/structuredLogger.js";
 import { recordCacheOperation } from "../../core/metrics/index.js";
 
 const CACHE_PREFIX = "response:";
